@@ -1,21 +1,37 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function LoginPage() {
-  const { login } = useAuth();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const { login, user } = useAuth();
+  const router = useRouter();
+
+  const usernameRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (user) router.replace('/tasks');
+  }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    const username = usernameRef.current?.value || '';
+    const password = passwordRef.current?.value || '';
+
     try {
+      if (password.length < 5) {
+        setError('Password must be more than 5');
+        setLoading(false);
+        return;
+      }
       await login(username, password);
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Error logging in');
@@ -30,18 +46,16 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <input
+            ref={usernameRef}
             className="border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
             placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
             required
           />
           <input
+            ref={passwordRef}
             className="border p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
             placeholder="Password"
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
             required
           />
           <button

@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = 'http://localhost:5000/api'; // move to env.local
+const API_URL = 'http://localhost:5050'; // move to env.local
 
 
 const api = axios.create({
